@@ -34,6 +34,7 @@ app.delete("/user", async (req, res) => {
   }
 });
 
+// Update API
 app.patch("/user/:id", async (req, res) => {
   const id = req.params.id;
   const data = req.body;
