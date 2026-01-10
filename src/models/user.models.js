@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
   {
@@ -22,12 +23,22 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       unique: true,
-      match: [/@/, "Invalid Email Please Enter the Valid Email addreass"],
+      // match: [/@/, "Invalid Email Please Enter the Valid Email addreass"],
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Enter a valide Email Address " + value);
+        }
+      },
     },
 
     password: {
       type: String,
       required: true,
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error("Enter Strong Password " + value);
+        }
+      },
     },
 
     age: {
@@ -49,6 +60,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default:
         "https://www.freepik.com/free-psd/contact-icon-illustration-isolated_397057724.htm#fromView=keyword&page=1&position=3&uuid=daadf36c-2d07-43e6-ba3b-6fc48ad49005&query=Default+user",
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Enter Valide URL " + value);
+        }
+      },
     },
     about: {
       type: String,
