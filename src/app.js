@@ -34,6 +34,27 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+// Login API
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error("Incredential Data");
+    }
+
+    const isCorrectPassword = await bcrypt.compare(password, user.password);
+    if (!isCorrectPassword) {
+      throw new Error("Incredential Data");
+    } else {
+      res.send("Login Successfully !");
+    }
+  } catch (error) {
+    res.status(500).send("ERROR : " + error.message);
+  }
+});
+
 // Delete API
 
 app.delete("/user", async (req, res) => {
