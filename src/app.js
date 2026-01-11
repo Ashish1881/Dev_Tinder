@@ -3,10 +3,13 @@ const connectDB = require("./config/database");
 const User = require("./models/user.models");
 const { validateSignup } = require("./Utils/validateSignup");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 // signup API
 app.post("/signup", async (req, res) => {
@@ -30,7 +33,7 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.send("User data save Secssefully");
   } catch (err) {
-    res.status(500).send("ERROR: " + err);
+    res.status(500).send("ERROR: " + err.message);
   }
 });
 
@@ -45,13 +48,39 @@ app.post("/login", async (req, res) => {
     }
 
     const isCorrectPassword = await bcrypt.compare(password, user.password);
-    if (!isCorrectPassword) {
-      throw new Error("Incredential Data");
-    } else {
+
+    const token = await jwt.sign(
+      { _id: user._id },
+      "DEV@Tender$deloperAshish#123"
+    );
+
+    if (isCorrectPassword) {
+      res.cookie("token", token);
       res.send("Login Successfully !");
+    } else {
+      throw new Error("Incredential Data");
     }
   } catch (error) {
     res.status(500).send("ERROR : " + error.message);
+  }
+});
+
+// Profile API
+app.get("/profile", async (req, res) => {
+  try {
+    const { token } = req.cookies;
+    if (!token) {
+      throw new Error("Token is not found plaese login..");
+    }
+    const decodedData = await jwt.verify(token, "DEV@Tender$deloperAshish#123");
+
+    const { _id } = decodedData;
+
+    const userProfile = await User.findById(_id);
+
+    res.send(userProfile);
+  } catch (error) {
+    res.status(401).send("ERROR : " + error.message);
   }
 });
 
@@ -66,7 +95,7 @@ app.delete("/user", async (req, res) => {
 
     res.send("User is Deleted Successfuly");
   } catch (error) {
-    throw new error();
+    throw new error("ERROR : ", error.message);
   }
 });
 
